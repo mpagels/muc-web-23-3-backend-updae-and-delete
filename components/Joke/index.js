@@ -9,13 +9,32 @@ export default function Joke() {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data, isLoading } = useSWR(`/api/jokes/${id}`);
+  const { data, isLoading, mutate } = useSWR(`/api/jokes/${id}`);
 
-  function handleEdit(event) {
+  async function handleEdit(event) {
     event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const jokeData = Object.fromEntries(formData);
+
+    const response = await fetch(`/api/jokes/${id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(jokeData),
+    });
+
+    if (response.ok) {
+      mutate();
+    }
   }
 
-  async function handleDelete() {}
+  async function handleDelete() {
+    await fetch(`/api/jokes/${id}`, {
+      method: "DELETE",
+    });
+
+    router.push("/");
+  }
 
   if (isLoading) {
     return <h1>Loading...</h1>;
